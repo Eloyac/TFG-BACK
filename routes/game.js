@@ -16,7 +16,7 @@ router.post('/create', auth, async (req, res) => {
     });
 
     const savedGame = await newGame.save();
-    res.status(201).json(savedGame);
+    res.status(201).json({ gameId: savedGame._id }); // Devolver solo el gameId
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -28,7 +28,7 @@ router.get('/mygames', auth, async (req, res) => {
     const games = await Game.find({ $or: [{ player1: req.user.id }, { player2: req.user.id }] });
     res.json(games);
   } catch (error) {
-    res.status (500).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 });
 
