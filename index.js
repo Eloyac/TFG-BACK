@@ -1,3 +1,5 @@
+require('dotenv').config(); // Asegúrate de requerir dotenv al inicio del archivo
+
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
@@ -17,7 +19,7 @@ mongoose.connect(uri, {
 }).then(() => {
   console.log('MongoDB connected');
 }).catch(err => {
-  console.error(err.message);
+  console.error('Error connecting to MongoDB:', err.message);
 });
 
 // Middleware
