@@ -4,7 +4,7 @@ const socketIo = require('socket.io');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const cors = require('cors'); // Importar cors
+const cors = require('cors');
 
 const app = express();
 const server = http.createServer(app);
@@ -22,7 +22,7 @@ mongoose.connect(uri, {
 
 // Middleware
 app.use(express.json());
-app.use(cors({ origin: 'https://eloyac.github.io' })); // Configurar CORS
+app.use(cors({ origin: 'https://eloyac.github.io' }));
 
 // Simple route
 app.get('/', (req, res) => {
