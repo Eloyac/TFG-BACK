@@ -4,18 +4,13 @@ const socketIo = require('socket.io');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const dotenv = require('dotenv');
-const authRoutes = require('./routes/auth');
-const gameRoutes = require('./routes/game');
-
-dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-// MongoDB connection
-mongoose.connect(process.env.MONGO_URI, {
+const uri = process.env.MONGO_URI;
+mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).then(() => {
@@ -26,10 +21,6 @@ mongoose.connect(process.env.MONGO_URI, {
 
 // Middleware
 app.use(express.json());
-
-// Rutas
-app.use('/api/auth', authRoutes);
-app.use('/api/games', gameRoutes);
 
 // Simple route
 app.get('/', (req, res) => {
@@ -44,17 +35,10 @@ io.on('connection', (socket) => {
     socket.join(gameId);
   });
 
-  socket.on('leaveGame', (gameId) => {
-    socket.leave(gameId);
-  });
-
-  socket.on('sendMessage', ({ gameId, text }) => {
-    const message = { text };
-    io.to(gameId).emit('message', message);
-  });
-
-  socket.on('move', (move) => {
-    io.emit('move', move); // Emitir el movimiento a todos los clientes
+  socket.on('move', (data) => {
+    const { gameId, move, fen, turn, result } = data;
+    socket.to(gameId).emit('move', move);
+    // Optionally, save the game state to the database here
   });
 
   socket.on('disconnect', () => {
