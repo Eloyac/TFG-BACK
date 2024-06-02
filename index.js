@@ -12,7 +12,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-const uri = process.env.MONGO_URI;
+const uri = "mongodb://eleloy99:PEnt2001@fesachess.4qovuup.mongodb.net/?retryWrites=true&w=majority&appName=FESACHESS";
 mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
