@@ -22,6 +22,11 @@ redisClient.connect().then(() => {
   console.log('Connected to Redis');
 });
 
+client.set('key', 'value')
+    .then(() => client.get('key'))
+    .then(value => console.log(value))
+    .catch(err => console.error(err));
+
 app.use(express.json());
 app.use(cors({ origin: 'https://eloyac.github.io' }));
 
