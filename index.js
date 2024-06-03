@@ -12,6 +12,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
+// Configuración de Redis
 const redisClient = redis.createClient({
   url: process.env.REDIS_URL,
   password: process.env.REDIS_PASSWORD,
@@ -22,17 +23,19 @@ redisClient.connect().then(() => {
   console.log('Connected to Redis');
 });
 
-client.set('key', 'value')
-    .then(() => client.get('key'))
-    .then(value => console.log(value))
-    .catch(err => console.error(err));
-
 app.use(express.json());
 app.use(cors({ origin: 'https://eloyac.github.io' }));
 
 app.get('/', (req, res) => {
   res.send('FESACHESS Backend');
 });
+
+// Importar y usar las rutas de autenticación y juego
+const authRoutes = require('./routes/auth');
+const gameRoutes = require('./routes/game');
+
+app.use('/api/auth', authRoutes);
+app.use('/api/games', gameRoutes);
 
 io.on('connection', (socket) => {
   console.log('New client connected');
@@ -51,10 +54,6 @@ io.on('connection', (socket) => {
     console.log('Client disconnected');
   });
 });
-
-// Importar las rutas del juego
-const gameRoutes = require('./routes/game');
-app.use('/api/games', gameRoutes);
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

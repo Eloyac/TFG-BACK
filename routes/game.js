@@ -9,7 +9,7 @@ const gameModel = new Game(redisClient);
 // Crear una nueva partida
 router.post('/create', auth, async (req, res) => {
   try {
-    const gameId = await gameModel.createGame(req.user.id, req.body.player2Id);
+    const gameId = await gameModel.createGame(req.user.email, req.body.player2Id);
     res.status(201).json({ gameId });
   } catch (error) {
     res.status(500).json({ message: error.message });
