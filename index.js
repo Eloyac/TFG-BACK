@@ -20,7 +20,7 @@ const io = socketIo(server, {
 });
 
 const { MONGO_URI, JWT_SECRET } = process.env;
-
+console.log(MONGO_URI);
 const uri = MONGO_URI;
 
 mongoose
