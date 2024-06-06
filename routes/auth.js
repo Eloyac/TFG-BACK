@@ -1,17 +1,22 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const { check, validationResult } = require('express-validator');
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
+require("dotenv").config();
+const { check, validationResult } = require("express-validator");
 
+const { MONGO_URI, JWT_SECRET } = process.env;
 // Registro de usuario
 router.post(
-  '/register',
+  "/register",
   [
-    check('name', 'Name is required').not().isEmpty(),
-    check('email', 'Please include a valid email').isEmail(),
-    check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 }),
+    check("name", "Name is required").not().isEmpty(),
+    check("email", "Please include a valid email").isEmail(),
+    check(
+      "password",
+      "Please enter a password with 6 or more characters"
+    ).isLength({ min: 6 }),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -25,7 +30,7 @@ router.post(
       let user = await User.findOne({ email });
 
       if (user) {
-        return res.status(400).json({ message: 'User already exists' });
+        return res.status(400).json({ message: "User already exists" });
       }
 
       user = new User({
@@ -47,8 +52,8 @@ router.post(
 
       jwt.sign(
         payload,
-        "3c6e0b8a9c15224a8228b9a98ca1531e5a8bda3606729e8cdd14e7b5f3c69f06e8a769f6d9db4e7a5a5db3bcb07a312a3cd9e6d7d7de5f295f1a6e6a1f8a6f7a",
-        { expiresIn: '5h' },
+        JWT_SECRET,
+        { expiresIn: "5h" },
         (err, token) => {
           if (err) throw err;
           res.json({ token });
@@ -56,17 +61,17 @@ router.post(
       );
     } catch (err) {
       console.error(err.message);
-      res.status(500).send('Server error');
+      res.status(500).send("Server error");
     }
   }
 );
 
 // Login de usuario
 router.post(
-  '/login',
+  "/login",
   [
-    check('email', 'Please include a valid email').isEmail(),
-    check('password', 'Password is required').exists(),
+    check("email", "Please include a valid email").isEmail(),
+    check("password", "Password is required").exists(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -80,13 +85,13 @@ router.post(
       let user = await User.findOne({ email });
 
       if (!user) {
-        return res.status(400).json({ message: 'Invalid Credentials' });
+        return res.status(400).json({ message: "Invalid Credentials" });
       }
 
       const isMatch = await bcrypt.compare(password, user.password);
 
       if (!isMatch) {
-        return res.status(400).json({ message: 'Invalid Credentials' });
+        return res.status(400).json({ message: "Invalid Credentials" });
       }
 
       const payload = {
@@ -95,18 +100,13 @@ router.post(
         },
       };
 
-      jwt.sign(
-        payload,
-        "3c6e0b8a9c15224a8228b9a98ca1531e5a8bda3606729e8cdd14e7b5f3c69f06e8a769f6d9db4e7a5a5db3bcb07a312a3cd9e6d7d7de5f295f1a6e6a1f8a6f7a",
-        { expiresIn: '5h' },
-        (err, token) => {
-          if (err) throw err;
-          res.json({ token });
-        }
-      );
+      jwt.sign(payload, JWT_SECRET, { expiresIn: "5h" }, (err, token) => {
+        if (err) throw err;
+        res.json({ token });
+      });
     } catch (err) {
       console.error(err.message);
-      res.status(500).send('Server error');
+      res.status(500).send("Server error");
     }
   }
 );
