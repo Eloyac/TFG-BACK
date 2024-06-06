@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 const { check, validationResult } = require('express-validator');
-const redisClient = require('../redisClient'); // Importar el cliente Redis
 
 // Registro de usuario
 router.post(
@@ -22,25 +22,26 @@ router.post(
     const { name, email, password } = req.body;
 
     try {
-      const userExists = await redisClient.get(`user:${email}`);
-      if (userExists) {
+      let user = await User.findOne({ email });
+
+      if (user) {
         return res.status(400).json({ message: 'User already exists' });
       }
 
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
-
-      const userData = {
+      user = new User({
         name,
         email,
-        password: hashedPassword,
-      };
+        password,
+      });
 
-      await redisClient.set(`user:${email}`, JSON.stringify(userData));
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+
+      await user.save();
 
       const payload = {
         user: {
-          email: userData.email,
+          id: user.id,
         },
       };
 
@@ -76,13 +77,13 @@ router.post(
     const { email, password } = req.body;
 
     try {
-      const user = await redisClient.get(`user:${email}`);
+      let user = await User.findOne({ email });
+
       if (!user) {
         return res.status(400).json({ message: 'Invalid Credentials' });
       }
 
-      const userData = JSON.parse(user);
-      const isMatch = await bcrypt.compare(password, userData.password);
+      const isMatch = await bcrypt.compare(password, user.password);
 
       if (!isMatch) {
         return res.status(400).json({ message: 'Invalid Credentials' });
@@ -90,7 +91,7 @@ router.post(
 
       const payload = {
         user: {
-          email: userData.email,
+          id: user.id,
         },
       };
 

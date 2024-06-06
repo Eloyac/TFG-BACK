@@ -1,34 +1,36 @@
-class Game {
-  constructor(client) {
-    this.client = client;
-  }
+const mongoose = require('mongoose');
 
-  async createGame(player1, player2) {
-    const gameId = `game:${Date.now()}`;
-    const gameData = {
-      player1,
-      player2,
-      boardState: 'start',
-      moves: [],
-      turn: 'white',
-      result: 'ongoing',
-    };
+const GameSchema = new mongoose.Schema({
+  player1: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'user',
+    required: true,
+  },
+  player2: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'user',
+    required: true,
+  },
+  boardState: {
+    type: String,
+    required: true,
+  },
+  moves: {
+    type: Array,
+    default: [],
+  },
+  turn: {
+    type: String,
+    default: 'white',
+  },
+  result: {
+    type: String,
+    default: 'ongoing',
+  },
+  date: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
-    await this.client.set(gameId, JSON.stringify(gameData));
-    return gameId;
-  }
-
-  async getGame(gameId) {
-    const gameData = await this.client.get(gameId);
-    return JSON.parse(gameData);
-  }
-
-  async updateGame(gameId, update) {
-    const gameData = await this.getGame(gameId);
-    const updatedGameData = { ...gameData, ...update };
-
-    await this.client.set(gameId, JSON.stringify(updatedGameData));
-  }
-}
-
-module.exports = Game;
+module.exports = mongoose.model('game', GameSchema);
