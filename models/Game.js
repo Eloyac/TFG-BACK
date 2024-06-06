@@ -9,7 +9,6 @@ const GameSchema = new mongoose.Schema({
   player2: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'user',
-    required: true,
   },
   boardState: {
     type: String,
