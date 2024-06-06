@@ -1,4 +1,4 @@
-require('dotenv').config(); // Asegúrate de requerir dotenv al inicio del archivo
+require('dotenv').config();
 
 const express = require('express');
 const http = require('http');
@@ -12,26 +12,29 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-const uri = "mongodb://eleloy99:PEnt2001@fesachess.4qovuup.mongodb.net/?retryWrites=true&w=majority&appName=FESACHESS";
-mongoose.connect(uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => {
-  console.log('MongoDB connected');
-}).catch(err => {
-  console.error('Error connecting to MongoDB:', err.message);
-});
+const uri = process.env.MONGO_URI;
+mongoose.connect(uri)
+  .then(() => {
+    console.log('MongoDB connected');
+  })
+  .catch(err => {
+    console.error('Error connecting to MongoDB:', err.message);
+  });
 
-// Middleware
 app.use(express.json());
 app.use(cors({ origin: 'https://eloyac.github.io' }));
 
-// Simple route
 app.get('/', (req, res) => {
   res.send('FESACHESS Backend');
 });
 
-// Socket.io connection
+// Importar y usar las rutas de autenticación y juego
+const authRoutes = require('./routes/auth');
+const gameRoutes = require('./routes/game');
+
+app.use('/api/auth', authRoutes);
+app.use('/api/games', gameRoutes);
+
 io.on('connection', (socket) => {
   console.log('New client connected');
 
@@ -49,10 +52,6 @@ io.on('connection', (socket) => {
     console.log('Client disconnected');
   });
 });
-
-// Rutas del juego
-const gameRoutes = require('./routes/game');
-app.use('/api/games', gameRoutes);
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
