@@ -1,9 +1,10 @@
 require('dotenv').config();
+require('dotenv').config();
 
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
-const mongoose = require('mongoose');
+const redis = require('redis');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const cors = require('cors');
@@ -27,6 +28,13 @@ app.use(cors({ origin: 'https://eloyac.github.io' }));
 app.get('/', (req, res) => {
   res.send('FESACHESS Backend');
 });
+
+// Importar y usar las rutas de autenticación y juego
+const authRoutes = require('./routes/auth');
+const gameRoutes = require('./routes/game');
+
+app.use('/api/auth', authRoutes);
+app.use('/api/games', gameRoutes);
 
 // Importar y usar las rutas de autenticación y juego
 const authRoutes = require('./routes/auth');
