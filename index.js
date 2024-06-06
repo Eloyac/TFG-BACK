@@ -21,7 +21,7 @@ const io = socketIo(server, {
 
 const { MONGO_URI, JWT_SECRET } = process.env;
 console.log(MONGO_URI);
-const uri = "mongodb+srv://eloyangulocuni:pent2001@mycluster.xhlkqax.mongodb.net/?retryWrites=true&w=majority&appName=MyCluster";
+const uri = MONGO_URI;
 
 mongoose
   .connect(uri, {
