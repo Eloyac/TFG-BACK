@@ -12,7 +12,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-const uri = process.env.MONGO_URI;
+const uri = "mongodb+srv://eloyangulocuni:pent2001@mycluster.xhlkqax.mongodb.net/?retryWrites=true&w=majority&appName=MyCluster";
 mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
