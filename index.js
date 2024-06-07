@@ -4,6 +4,7 @@ const socketIo = require("socket.io");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
+const Game = require('./models/Game');
 
 // Configuraciones hardcodeadas
 const MONGO_URI =
@@ -65,17 +66,16 @@ io.use((socket, next) => {
 io.on("connection", (socket) => {
   console.log("New client connected");
 
-  // Unirse a una partida
   socket.on("joinGame", (gameId) => {
     socket.join(gameId);
   });
 
-  // Manejo de movimientos
   socket.on("move", async (data) => {
+    console.log("Data received:", data); // Añadir este log
     const { gameId, move, fen, turn, result } = data;
 
     try {
-      let game = await Game.findById(gameId);
+      let game = await Game.findById(gameId); // Aquí se usa el modelo Game
       if (!game) {
         return console.error("Game not found");
       }
@@ -86,7 +86,6 @@ io.on("connection", (socket) => {
       game.result = result;
       await game.save();
 
-      // Emitir el movimiento a todos los jugadores en la misma partida
       socket.to(gameId).emit("move", { move, fen, turn, result });
     } catch (error) {
       console.error("Error processing move:", error.message);
@@ -97,6 +96,7 @@ io.on("connection", (socket) => {
     console.log("Client disconnected");
   });
 });
+
 
 
 const PORT = process.env.PORT || 5000;
