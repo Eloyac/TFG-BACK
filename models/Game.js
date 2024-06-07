@@ -3,33 +3,30 @@ const mongoose = require('mongoose');
 const GameSchema = new mongoose.Schema({
   player1: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'user',
-    required: true,
+    ref: 'User',
+    required: true
   },
   player2: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'user',
+    ref: 'User',
+    default: null
   },
   boardState: {
     type: String,
-    required: true,
+    default: 'start'
   },
   moves: {
-    type: Array,
-    default: [],
-  },
-  turn: {
-    type: String,
-    default: 'white',
+    type: [String],
+    default: []
   },
   result: {
     type: String,
-    default: 'ongoing',
+    default: 'ongoing'
   },
-  date: {
-    type: Date,
-    default: Date.now,
-  },
+  turn: {
+    type: String,
+    default: 'w'
+  }
 });
 
-module.exports = mongoose.model('game', GameSchema);
+module.exports = mongoose.model('Game', GameSchema);
