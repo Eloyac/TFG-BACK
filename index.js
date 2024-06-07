@@ -76,8 +76,15 @@ io.on("connection", (socket) => {
 });
 
 // Rutas del juego
+const express = require("express");
+const authRoutes = require("./routes/auth");
 const gameRoutes = require("./routes/game");
+
+app.use(express.json());
+
+// Asegúrate de montar las rutas correctamente
+app.use("/api/auth", authRoutes);
 app.use("/api/games", gameRoutes);
 
 const PORT = 5000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
