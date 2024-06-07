@@ -86,11 +86,18 @@ io.on("connection", (socket) => {
       game.result = result;
       await game.save();
   
-      socket.to(gameId).emit("move", { move, fen, turn, result });
+      // Asegúrate de enviar el movimiento como cadena JSON
+      socket.to(gameId).emit("move", {
+        move: JSON.stringify(move),
+        fen,
+        turn,
+        result
+      });
     } catch (error) {
       console.error("Error processing move:", error.message);
     }
   });
+  
 
   socket.on("disconnect", () => {
     console.log("Client disconnected");
