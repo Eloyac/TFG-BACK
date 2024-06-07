@@ -33,6 +33,7 @@ router.post('/join', auth, async (req, res) => {
       return res.status(404).json({ message: 'Game not found' });
     }
     
+    // Asignar player2 si está vacío
     if (!game.player2) {
       game.player2 = req.user.id;
       await game.save();
@@ -44,6 +45,7 @@ router.post('/join', auth, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
 
 // Obtener el estado de un juego específico
 router.get('/:gameId', auth, async (req, res) => {
