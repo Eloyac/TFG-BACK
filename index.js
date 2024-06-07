@@ -47,6 +47,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/games", gameRoutes);
 
 // Socket.io authentication
+// Autenticación con socket.io
 io.use((socket, next) => {
   const token = socket.handshake.auth.token;
   if (!token) {
@@ -64,14 +65,15 @@ io.use((socket, next) => {
 io.on("connection", (socket) => {
   console.log("New client connected");
 
+  // Unirse a una partida
   socket.on("joinGame", (gameId) => {
     socket.join(gameId);
   });
 
+  // Manejo de movimientos
   socket.on("move", async (data) => {
     const { gameId, move, fen, turn, result } = data;
 
-    // Actualiza el estado del juego en la base de datos
     try {
       let game = await Game.findById(gameId);
       if (!game) {
@@ -84,8 +86,8 @@ io.on("connection", (socket) => {
       game.result = result;
       await game.save();
 
-      // Emite el movimiento a otros jugadores en la misma partida
-      socket.to(gameId).emit("move", move);
+      // Emitir el movimiento a todos los jugadores en la misma partida
+      socket.to(gameId).emit("move", { move, fen, turn, result });
     } catch (error) {
       console.error("Error processing move:", error.message);
     }
@@ -95,6 +97,7 @@ io.on("connection", (socket) => {
     console.log("Client disconnected");
   });
 });
+
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
