@@ -68,40 +68,40 @@ io.on("connection", (socket) => {
 
   socket.on("joinGame", (gameId) => {
     socket.join(gameId);
+    console.log(`Socket joined game: ${gameId}`);
   });
 
   socket.on("move", async (data) => {
-  const { gameId, move, fen, turn, result } = data;
+    const { gameId, move, fen, turn, result } = data;
 
-  try {
-    let game = await Game.findById(gameId);
-    if (!game) {
-      return console.error("Game not found");
+    try {
+      let game = await Game.findById(gameId);
+      if (!game) {
+        return console.error("Game not found");
+      }
+
+      if (game.turn !== socket.user.color) {
+        return console.error("Not your turn");
+      }
+
+      game.moves.push(JSON.stringify(move));
+      game.boardState = fen;
+      game.turn = turn;
+      game.result = result;
+      await game.save();
+
+      // Emitir el movimiento a todos en la sala, incluyendo al jugador que hizo el movimiento
+      io.to(gameId).emit("move", { move: JSON.stringify(move), fen, turn, result });
+    } catch (error) {
+      console.error("Error processing move:", error.message);
     }
-
-    // Verifica si es el turno correcto del jugador
-    if (game.turn !== socket.user.color) {
-      return console.error("Not your turn");
-    }
-
-    game.moves.push(JSON.stringify(move));
-    game.boardState = fen;
-    game.turn = turn;
-    game.result = result;
-    await game.save();
-
-    socket.to(gameId).emit("move", { move: JSON.stringify(move), fen, turn, result });
-  } catch (error) {
-    console.error("Error processing move:", error.message);
-  }
-});
-
-  
+  });
 
   socket.on("disconnect", () => {
     console.log("Client disconnected");
   });
 });
+
 
 
 
