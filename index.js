@@ -71,32 +71,31 @@ io.on("connection", (socket) => {
   });
 
   socket.on("move", async (data) => {
-    const { gameId, move, fen, turn, result } = data;
-  
-    try {
-      let game = await Game.findById(gameId);
-      if (!game) {
-        return console.error("Game not found");
-      }
-  
-      // Convierte el objeto move a una cadena JSON
-      game.moves.push(JSON.stringify(move));
-      game.boardState = fen;
-      game.turn = turn;
-      game.result = result;
-      await game.save();
-  
-      // Asegúrate de enviar el movimiento como cadena JSON
-      socket.to(gameId).emit("move", {
-        move: JSON.stringify(move),
-        fen,
-        turn,
-        result
-      });
-    } catch (error) {
-      console.error("Error processing move:", error.message);
+  const { gameId, move, fen, turn, result } = data;
+
+  try {
+    let game = await Game.findById(gameId);
+    if (!game) {
+      return console.error("Game not found");
     }
-  });
+
+    // Verifica si es el turno correcto del jugador
+    if (game.turn !== socket.user.color) {
+      return console.error("Not your turn");
+    }
+
+    game.moves.push(JSON.stringify(move));
+    game.boardState = fen;
+    game.turn = turn;
+    game.result = result;
+    await game.save();
+
+    socket.to(gameId).emit("move", { move: JSON.stringify(move), fen, turn, result });
+  } catch (error) {
+    console.error("Error processing move:", error.message);
+  }
+});
+
   
 
   socket.on("disconnect", () => {
