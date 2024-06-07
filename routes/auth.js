@@ -6,7 +6,7 @@ const User = require("../models/User");
 require("dotenv").config();
 const { check, validationResult } = require("express-validator");
 
-const { MONGO_URI, JWT_SECRET } = process.env;
+
 // Registro de usuario
 router.post(
   "/register",
@@ -52,7 +52,7 @@ router.post(
 
       jwt.sign(
         payload,
-        JWT_SECRET,
+        "3c6e0b8a9c15224a8228b9a98ca1531e5a8bda3606729e8cdd14e7b5f3c69f06e8a769f6d9db4e7a5a5db3bcb07a312a3cd9e6d7d7de5f295f1a6e6a1f8a6f7a",
         { expiresIn: "5h" },
         (err, token) => {
           if (err) throw err;
@@ -100,7 +100,7 @@ router.post(
         },
       };
 
-      jwt.sign(payload, JWT_SECRET, { expiresIn: "5h" }, (err, token) => {
+      jwt.sign(payload, "3c6e0b8a9c15224a8228b9a98ca1531e5a8bda3606729e8cdd14e7b5f3c69f06e8a769f6d9db4e7a5a5db3bcb07a312a3cd9e6d7d7de5f295f1a6e6a1f8a6f7a", { expiresIn: "5h" }, (err, token) => {
         if (err) throw err;
         res.json({ token });
       });

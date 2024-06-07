@@ -19,9 +19,7 @@ const io = socketIo(server, {
   },
 });
 
-const { MONGO_URI, JWT_SECRET } = process.env;
-console.log(MONGO_URI);
-const uri = MONGO_URI;
+const uri = "mongodb+srv://eloyangulocuni:pent2001@mycluster.xhlkqax.mongodb.net/?retryWrites=true&w=majority&appName=MyCluster";
 
 mongoose
   .connect(uri, {
@@ -51,7 +49,7 @@ io.use((socket, next) => {
     return next(new Error("Authentication error"));
   }
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, "3c6e0b8a9c15224a8228b9a98ca1531e5a8bda3606729e8cdd14e7b5f3c69f06e8a769f6d9db4e7a5a5db3bcb07a312a3cd9e6d7d7de5f295f1a6e6a1f8a6f7a");
     socket.user = decoded.user;
     next();
   } catch (err) {
@@ -81,5 +79,5 @@ io.on("connection", (socket) => {
 const gameRoutes = require("./routes/game");
 app.use("/api/games", gameRoutes);
 
-const PORT = process.env.PORT || 5000;
+const PORT = 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
