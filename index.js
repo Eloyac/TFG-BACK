@@ -4,6 +4,9 @@ const socketIo = require('socket.io');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const authRoutes = require('./routes/auth');
+app.use('/api/auth', authRoutes);
+
 
 // Configuraciones hardcodeadas
 const MONGO_URI = "mongodb+srv://eloyangulocuni:pent2001@mycluster.xhlkqax.mongodb.net/?retryWrites=true&w=majority&appName=MyCluster";
