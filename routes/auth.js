@@ -1,24 +1,33 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const auth = require('../middleware/auth');
+const bcrypt = require('bcryptjs');
+const User = require('../models/User');
+const { check, validationResult } = require('express-validator');
 
-// Registro de usuario
-router.post('/register', async (req, res) => {
+// Registro de usuarios
+router.post('/register', [
+  check('name', 'Name is required').not().isEmpty(),
+  check('email', 'Please include a valid email').isEmail(),
+  check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 })
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const { name, email, password } = req.body;
 
   try {
     let user = await User.findOne({ email });
     if (user) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ msg: 'User already exists' });
     }
 
     user = new User({
       name,
       email,
-      password,
+      password
     });
 
     const salt = await bcrypt.genSalt(10);
@@ -28,14 +37,14 @@ router.post('/register', async (req, res) => {
 
     const payload = {
       user: {
-        id: user.id,
-      },
+        id: user.id
+      }
     };
 
     jwt.sign(
       payload,
-      "3c6e0b8a9c15224a8228b9a98ca1531e5a8bda3606729e8cdd14e7b5f3c69f06e8a769f6d9db4e7a5a5db3bcb07a312a3cd9e6d7d7de5f295f1a6e6a1f8a6f7a",
-      { expiresIn: 360000 },
+      '3c6e0b8a9c15224a8228b9a98ca1531e5a8bda3606729e8cdd14e7b5f3c69f06e8a769f6d9db4e7a5a5db3bcb07a312a3cd9e6d7d7de5f295f1a6e6a1f8a6f7a', // JWT_SECRET
+      { expiresIn: '1h' },
       (err, token) => {
         if (err) throw err;
         res.json({ token });
@@ -47,31 +56,39 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Inicio de sesión
-router.post('/login', async (req, res) => {
+// Login de usuarios
+router.post('/login', [
+  check('email', 'Please include a valid email').isEmail(),
+  check('password', 'Password is required').exists()
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ email });
+    let user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: 'Invalid Credentials' });
+      return res.status(400).json({ msg: 'Invalid Credentials' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid Credentials' });
+      return res.status(400).json({ msg: 'Invalid Credentials' });
     }
 
     const payload = {
       user: {
-        id: user.id,
-      },
+        id: user.id
+      }
     };
 
     jwt.sign(
       payload,
-      "3c6e0b8a9c15224a8228b9a98ca1531e5a8bda3606729e8cdd14e7b5f3c69f06e8a769f6d9db4e7a5a5db3bcb07a312a3cd9e6d7d7de5f295f1a6e6a1f8a6f7a",
-      { expiresIn: 360000 },
+      '3c6e0b8a9c15224a8228b9a98ca1531e5a8bda3606729e8cdd14e7b5f3c69f06e8a769f6d9db4e7a5a5db3bcb07a312a3cd9e6d7d7de5f295f1a6e6a1f8a6f7a', // JWT_SECRET
+      { expiresIn: '1h' },
       (err, token) => {
         if (err) throw err;
         res.json({ token });
@@ -83,16 +100,13 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Obtener datos del usuario
-router.get('/user/:userId', auth, async (req, res) => {
+// Obtener información del usuario
+router.get('/user/:id', async (req, res) => {
   try {
-    const user = await User.findById(req.params.userId).select('-password');
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    const user = await User.findById(req.params.id).select('-password');
     res.json(user);
   } catch (err) {
-    console.error('Error fetching user:', err.message);
+    console.error(err.message);
     res.status(500).send('Server error');
   }
 });
