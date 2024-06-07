@@ -71,21 +71,21 @@ io.on("connection", (socket) => {
   });
 
   socket.on("move", async (data) => {
-    console.log("Data received:", data); // Añadir este log
     const { gameId, move, fen, turn, result } = data;
-
+  
     try {
-      let game = await Game.findById(gameId); // Aquí se usa el modelo Game
+      let game = await Game.findById(gameId);
       if (!game) {
         return console.error("Game not found");
       }
-
-      game.moves.push(move);
+  
+      // Convierte el objeto move a una cadena JSON
+      game.moves.push(JSON.stringify(move));
       game.boardState = fen;
       game.turn = turn;
       game.result = result;
       await game.save();
-
+  
       socket.to(gameId).emit("move", { move, fen, turn, result });
     } catch (error) {
       console.error("Error processing move:", error.message);
