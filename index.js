@@ -63,10 +63,27 @@ io.on('connection', (socket) => {
     socket.join(gameId);
   });
 
-  socket.on('move', (data) => {
+  socket.on('move', async (data) => {
     const { gameId, move, fen, turn, result } = data;
-    socket.to(gameId).emit('move', move);
-    // Optionally, save the game state to the database here
+
+    // Actualiza el estado del juego en la base de datos
+    try {
+      let game = await Game.findById(gameId);
+      if (!game) {
+        return console.error('Game not found');
+      }
+
+      game.moves.push(move);
+      game.boardState = fen;
+      game.turn = turn;
+      game.result = result;
+      await game.save();
+
+      // Emite el movimiento a otros jugadores en la misma partida
+      socket.to(gameId).emit('move', move);
+    } catch (error) {
+      console.error('Error processing move:', error.message);
+    }
   });
 
   socket.on('disconnect', () => {
