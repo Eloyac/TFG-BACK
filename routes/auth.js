@@ -1,24 +1,12 @@
 const express = require('express');
 const router = express.Router();
+const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { check, validationResult } = require('express-validator');
-const User = require('../models/User');
+const auth = require('../middleware/auth');
 
-// Configuración hardcodeada
-const JWT_SECRET = "3c6e0b8a9c15224a8228b9a98ca1531e5a8bda3606729e8cdd14e7b5f3c69f06e8a769f6d9db4e7a5a5db3bcb07a312a3cd9e6d7d7de5f295f1a6e6a1f8a6f7a";
-
-// Registro
-router.post('/register', [
-  check('name', 'Name is required').not().isEmpty(),
-  check('email', 'Please include a valid email').isEmail(),
-  check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 })
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
+// Registro de usuario
+router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
 
   try {
@@ -30,7 +18,7 @@ router.post('/register', [
     user = new User({
       name,
       email,
-      password
+      password,
     });
 
     const salt = await bcrypt.genSalt(10);
@@ -40,13 +28,13 @@ router.post('/register', [
 
     const payload = {
       user: {
-        id: user.id
-      }
+        id: user.id,
+      },
     };
 
     jwt.sign(
       payload,
-      JWT_SECRET,
+      "3c6e0b8a9c15224a8228b9a98ca1531e5a8bda3606729e8cdd14e7b5f3c69f06e8a769f6d9db4e7a5a5db3bcb07a312a3cd9e6d7d7de5f295f1a6e6a1f8a6f7a",
       { expiresIn: 360000 },
       (err, token) => {
         if (err) throw err;
@@ -60,19 +48,11 @@ router.post('/register', [
 });
 
 // Inicio de sesión
-router.post('/login', [
-  check('email', 'Please include a valid email').isEmail(),
-  check('password', 'Password is required').exists()
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
+router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    let user = await User.findOne({ email });
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: 'Invalid Credentials' });
     }
@@ -84,13 +64,13 @@ router.post('/login', [
 
     const payload = {
       user: {
-        id: user.id
-      }
+        id: user.id,
+      },
     };
 
     jwt.sign(
       payload,
-      JWT_SECRET,
+      "3c6e0b8a9c15224a8228b9a98ca1531e5a8bda3606729e8cdd14e7b5f3c69f06e8a769f6d9db4e7a5a5db3bcb07a312a3cd9e6d7d7de5f295f1a6e6a1f8a6f7a",
       { expiresIn: 360000 },
       (err, token) => {
         if (err) throw err;
@@ -99,6 +79,20 @@ router.post('/login', [
     );
   } catch (err) {
     console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+// Obtener datos del usuario
+router.get('/user/:userId', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user);
+  } catch (err) {
+    console.error('Error fetching user:', err.message);
     res.status(500).send('Server error');
   }
 });
