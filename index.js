@@ -80,7 +80,11 @@ io.on("connection", (socket) => {
         return console.error("Game not found");
       }
 
-      if (game.turn !== socket.user.color) {
+      // Asegúrate de que el turno coincide con el color del jugador
+      const playerColor = game.turn === 'w' ? 'player1' : 'player2';
+      const userId = socket.user.id;
+
+      if (game[playerColor] !== userId) {
         return console.error("Not your turn");
       }
 
@@ -90,7 +94,6 @@ io.on("connection", (socket) => {
       game.result = result;
       await game.save();
 
-      // Emitir el movimiento a todos en la sala, incluyendo al jugador que hizo el movimiento
       io.to(gameId).emit("move", { move: JSON.stringify(move), fen, turn, result });
     } catch (error) {
       console.error("Error processing move:", error.message);
@@ -101,6 +104,7 @@ io.on("connection", (socket) => {
     console.log("Client disconnected");
   });
 });
+
 
 
 
