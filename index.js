@@ -80,14 +80,7 @@ io.on("connection", (socket) => {
         return console.error("Game not found");
       }
 
-      // Asegúrate de que el turno coincide con el color del jugador
-      //const playerColor = game.turn === 'w' ? 'player1' : 'player2';
-      //const userId = socket.user.id;
-
-      //if (game[playerColor] !== userId) {
-      //  return console.error("Not your turn");
-      //}
-
+      // Asignar el movimiento al juego y actualizar el estado del juego
       game.moves.push(JSON.stringify(move));
       game.boardState = fen;
       game.turn = turn;
@@ -109,6 +102,7 @@ io.on("connection", (socket) => {
     console.log("Client disconnected");
   });
 });
+
 
 
 
