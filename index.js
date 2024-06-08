@@ -81,12 +81,12 @@ io.on("connection", (socket) => {
       }
 
       // Asegúrate de que el turno coincide con el color del jugador
-      const playerColor = game.turn === 'w' ? 'player1' : 'player2';
-      const userId = socket.user.id;
+      //const playerColor = game.turn === 'w' ? 'player1' : 'player2';
+      //const userId = socket.user.id;
 
-      if (game[playerColor] !== userId) {
-        return console.error("Not your turn");
-      }
+      //if (game[playerColor] !== userId) {
+      //  return console.error("Not your turn");
+      //}
 
       game.moves.push(JSON.stringify(move));
       game.boardState = fen;
