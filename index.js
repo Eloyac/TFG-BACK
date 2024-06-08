@@ -6,7 +6,6 @@ const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const Game = require('./models/Game');
 
-// Configuraciones hardcodeadas
 const MONGO_URI =
   "mongodb+srv://eloyangulocuni:pent2001@mycluster.xhlkqax.mongodb.net/?retryWrites=true&w=majority&appName=MyCluster";
 const JWT_SECRET =
@@ -23,7 +22,8 @@ const io = socketIo(server, {
   },
 });
 
-// Conectar a MongoDB
+
+// Conexcion a mondongo
 mongoose
   .connect(MONGO_URI, {
     useNewUrlParser: true,
@@ -47,8 +47,7 @@ const gameRoutes = require("./routes/game");
 app.use("/api/auth", authRoutes);
 app.use("/api/games", gameRoutes);
 
-// Socket.io authentication
-// Autenticación con socket.io
+// Autenticación con el focking socket.io
 io.use((socket, next) => {
   const token = socket.handshake.auth.token;
   if (!token) {
@@ -80,14 +79,14 @@ io.on("connection", (socket) => {
         return console.error("Game not found");
       }
 
-      // Asignar el movimiento al juego y actualizar el estado del juego
+      // Mover en tiempo real
       game.moves.push(JSON.stringify(move));
       game.boardState = fen;
       game.turn = turn;
       game.result = result;
       await game.save();
 
-      // Emitir el estado completo del juego después de un movimiento
+      // Estado completo del juego para que no se buguee
       io.to(gameId).emit("move", {
         fen: game.boardState,
         turn: game.turn,
@@ -102,11 +101,6 @@ io.on("connection", (socket) => {
     console.log("Client disconnected");
   });
 });
-
-
-
-
-
 
 
 const PORT = process.env.PORT || 5000;

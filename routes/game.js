@@ -1,15 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const Game = require('../models/Game');
-const User = require('../models/User');
-const auth = require('../middleware/auth'); // Middleware para verificar JWT
+const auth = require('../middleware/auth'); 
 
-// Crear una nueva partida
 router.post('/create', auth, async (req, res) => {
   try {
     const newGame = new Game({
       player1: req.user.id,
-      boardState: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', // Estado inicial del tablero
+      boardState: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
     });
 
     const savedGame = await newGame.save();
@@ -19,7 +17,7 @@ router.post('/create', auth, async (req, res) => {
   }
 });
 
-// Unirse a una partida existente
+
 router.post('/join', auth, async (req, res) => {
   const { gameId } = req.body;
 
@@ -28,13 +26,9 @@ router.post('/join', auth, async (req, res) => {
     if (!game) {
       return res.status(404).json({ message: 'Game not found' });
     }
-
-    // Asegurarse de que el jugador no sea el mismo que el que creó el juego
     if (game.player1.equals(req.user.id)) {
       return res.status(400).json({ message: 'You cannot join your own game' });
     }
-
-    // Asignar el jugador 2
     game.player2 = req.user.id;
     await game.save();
 
@@ -44,7 +38,7 @@ router.post('/join', auth, async (req, res) => {
   }
 });
 
-// Obtener el estado de un juego específico
+
 router.get('/:gameId', auth, async (req, res) => {
   try {
     const game = await Game.findById(req.params.gameId);
